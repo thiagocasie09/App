@@ -1,24 +1,42 @@
+import 'package:flutter/material.dart';
 import 'package:modernlogintute/components/my_button.dart';
 import 'package:modernlogintute/components/my_textfield.dart';
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
-class LoginPage extends StatefulWidget {
+class RegisterPage extends StatefulWidget {
   final Function()? onTap;
-  const LoginPage({super.key, required this.onTap});
+  const RegisterPage({super.key, required this.onTap});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
   final emailTextController = TextEditingController();
   final passwordTextController = TextEditingController();
+  final confirmPasswordTextController = TextEditingController();
 
-  void sigIn() async {
-    await FirebaseAuth.instance.signInWithEmailAndPassword(
-      email: emailTextController.text,
-      password: passwordTextController.text,
+  void singUp() {
+    showDialog(
+      context: context,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+
+    if (passwordTextController.text != confirmPasswordTextController.text) {
+      Navigator.pop(context);
+
+      //
+      displayMessege("Contraseña no coincide.");
+    }
+  }
+
+  void displayMessege(String messege) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(messege),
+      ),
     );
   }
 
@@ -43,7 +61,7 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 50),
 
               Text(
-                "Bienvenido a APP Santiago",
+                "Crea una cuenta: ",
                 style: TextStyle(
                   color: Colors.pink[700],
                 ),
@@ -63,14 +81,20 @@ class _LoginPageState extends State<LoginPage> {
 
               MyTextField(
                 controller: passwordTextController,
-                hintText: 'Password',
+                hintText: 'Contraseña: ',
+                obscureText: true,
+              ),
+
+              MyTextField(
+                controller: confirmPasswordTextController,
+                hintText: 'Confirma tu Contraseña: ',
                 obscureText: true,
               ),
 
               const SizedBox(height: 10),
 
               MyButton(
-                onTap: sigIn,
+                onTap: () {},
                 text: 'Singn In',
               ),
 
@@ -80,7 +104,7 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    " No te has unido? ",
+                    " Ya tienes Cuenta? ",
                     style: TextStyle(
                       color: Colors.grey[700],
                     ),
@@ -89,7 +113,7 @@ class _LoginPageState extends State<LoginPage> {
                   GestureDetector(
                     onTap: widget.onTap,
                     child: const Text(
-                      "Registrate Ahora!",
+                      "Incia Sesion ahora!",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.pink,
