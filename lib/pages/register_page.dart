@@ -1,3 +1,4 @@
+import "package:firebase_auth/firebase_auth.dart";
 import 'package:flutter/material.dart';
 import 'package:modernlogintute/components/my_button.dart';
 import 'package:modernlogintute/components/my_textfield.dart';
@@ -15,7 +16,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final passwordTextController = TextEditingController();
   final confirmPasswordTextController = TextEditingController();
 
-  void singUp() {
+  void singUp() async {
     showDialog(
       context: context,
       builder: (context) => const Center(
@@ -28,6 +29,16 @@ class _RegisterPageState extends State<RegisterPage> {
 
       //
       displayMessege("Contraseña no coincide.");
+      return;
+    }
+    try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: emailTextController.text,
+          password: passwordTextController.text);
+      if (context.mounted) Navigator.pop(context);
+    } on FirebaseAuthException catch (e) {
+      Navigator.pop(context);
+      displayMessege(e.code);
     }
   }
 
@@ -94,7 +105,7 @@ class _RegisterPageState extends State<RegisterPage> {
               const SizedBox(height: 10),
 
               MyButton(
-                onTap: () {},
+                onTap: singUp,
                 text: 'Singn In',
               ),
 

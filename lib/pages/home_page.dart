@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:modernlogintute/widgets/listcard.dart';
 import 'package:flutter/material.dart';
 import 'package:modernlogintute/pages/NewPublishForm.dart';
@@ -7,11 +8,21 @@ class HomeScreen extends StatelessWidget {
     super.key,
   });
 
+  void signOut() {
+    FirebaseAuth.instance.signOut();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('App Santiago'),
+        actions: [
+          IconButton(
+            onPressed: signOut,
+            icon: Icon(Icons.logout),
+          ),
+        ],
         backgroundColor: Colors.pink,
         foregroundColor: Colors.white,
       ),
@@ -26,7 +37,7 @@ class HomeScreen extends StatelessWidget {
           );
         },
         child: const Icon(Icons.add),
-        backgroundColor: Colors.green,
+        backgroundColor: Colors.pink,
         foregroundColor: Colors.white,
       ),
     );

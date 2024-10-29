@@ -1,4 +1,4 @@
-import 'package:feedcards/services/firebase_service.dart';
+import 'package:modernlogintute/services/firebase_service.dart';
 import 'package:flutter/material.dart';
 
 class NewPublishForm extends StatefulWidget {
