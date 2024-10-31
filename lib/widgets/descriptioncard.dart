@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-// ignore: camel_case_types
 class descriptioncard extends StatelessWidget {
   const descriptioncard({super.key, required this.description});
 
@@ -8,12 +7,12 @@ class descriptioncard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
+      padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
       child: Text(
         description,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+        style: TextStyle(color: Colors.grey),
       ),
     );
   }

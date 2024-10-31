@@ -35,7 +35,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '276813313432',
     projectId: 'aplicacionesmov-fba2f',
     authDomain: 'aplicacionesmov-fba2f.firebaseapp.com',
-    storageBucket: 'aplicacionesmov-fba2f.appspot.com',
+    storageBucket: 'aplicacionesmov-fba2f.firebasestorage.app',
     measurementId: 'G-NLKL8Y3C47',
   );
 
@@ -44,7 +44,7 @@ class DefaultFirebaseOptions {
     appId: '1:276813313432:android:5a69f7b2141a5b742c67ed',
     messagingSenderId: '276813313432',
     projectId: 'aplicacionesmov-fba2f',
-    storageBucket: 'aplicacionesmov-fba2f.appspot.com',
+    storageBucket: 'aplicacionesmov-fba2f.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
@@ -52,7 +52,7 @@ class DefaultFirebaseOptions {
     appId: '1:276813313432:ios:3f29061b19a925162c67ed',
     messagingSenderId: '276813313432',
     projectId: 'aplicacionesmov-fba2f',
-    storageBucket: 'aplicacionesmov-fba2f.appspot.com',
+    storageBucket: 'aplicacionesmov-fba2f.firebasestorage.app',
     iosBundleId: 'com.example.modernlogintute',
   );
 
@@ -61,7 +61,7 @@ class DefaultFirebaseOptions {
     appId: '1:276813313432:ios:3f29061b19a925162c67ed',
     messagingSenderId: '276813313432',
     projectId: 'aplicacionesmov-fba2f',
-    storageBucket: 'aplicacionesmov-fba2f.appspot.com',
+    storageBucket: 'aplicacionesmov-fba2f.firebasestorage.app',
     iosBundleId: 'com.example.modernlogintute',
   );
 
@@ -71,7 +71,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '276813313432',
     projectId: 'aplicacionesmov-fba2f',
     authDomain: 'aplicacionesmov-fba2f.firebaseapp.com',
-    storageBucket: 'aplicacionesmov-fba2f.appspot.com',
+    storageBucket: 'aplicacionesmov-fba2f.firebasestorage.app',
     measurementId: 'G-N5E6KVKW4M',
   );
+
 }

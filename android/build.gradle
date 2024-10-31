@@ -11,6 +11,7 @@ buildscript {
         // END: FlutterFire Configuration
         classpath 'com.android.tools.build:gradle:7.1.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        
     }
 }
 
@@ -32,3 +33,27 @@ subprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 33 // O la versión que estés usando
+
+    defaultConfig {
+        applicationId "com.tuapp.tunombre" // Reemplaza con tu ID de aplicación
+        minSdkVersion 21
+        targetSdkVersion 33 // O la versión que estés usando
+        versionCode 1
+        versionName "1.0"
+    }
+    // Otras configuraciones...
+}
+
+dependencies {
+    implementation platform('com.google.firebase:firebase-bom:31.0.0') // Reemplaza con la versión más reciente
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-auth'
+    implementation 'com.google.firebase:firebase-firestore'
+    // Otras dependencias...
+}
+
+apply plugin: 'com.google.gms.google-services'
