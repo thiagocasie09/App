@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 
-// ignore: camel_case_types
-class imagecard extends StatelessWidget {
-  const imagecard({super.key, required this.imagen});
+class ImageCard extends StatelessWidget {
+  final String image;
 
-  final String imagen;
+  const ImageCard({Key? key, required this.image}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 300,
-      child: Image.network(
-        imagen,
-        fit: BoxFit.fitWidth,
-      ),
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: image.isNotEmpty
+          ? Image.network(image)
+          : const SizedBox.shrink(), // Si no hay imagen, no se muestra nada
     );
   }
 }

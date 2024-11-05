@@ -1,42 +1,25 @@
-import 'package:modernlogintute/widgets/bottomscard.dart';
-import 'package:modernlogintute/widgets/descriptioncard.dart';
-import 'package:modernlogintute/widgets/imagecard.dart';
-import 'package:modernlogintute/widgets/titlecard.dart';
 import 'package:flutter/material.dart';
 
-class card extends StatelessWidget {
-  const card({super.key, required this.data, required this.documentId});
+class CardWidget extends StatelessWidget {
+  final Map<String, dynamic> data;
+  final String documentId;
 
-  final Map<String, dynamic> data; // Cambiar a Map<String, dynamic>
-  final String documentId; // El ID del documento en Firebase
+  const CardWidget({super.key, required this.data, required this.documentId});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(top: 10),
-      width: double.infinity,
-      height: 350,
-      decoration: const BoxDecoration(color: Colors.white),
-      child: Container(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              child: Titlecard(
-                name: data["publisher"] ?? "Sin nombre",
-                documentId: documentId,
-              ),
-            ),
-            descriptioncard(
-                description: data["description"] ?? "Sin descripción"),
-            imagecard(imagen: data["publishimage"] ?? ""),
-            Container(
-              child: bottomscard(),
-            )
-          ],
-        ),
+    return Card(
+      margin: const EdgeInsets.all(10),
+      child: Column(
+        children: [
+          ListTile(
+            title: Text(data["publisher"] ?? "Sin nombre"),
+            subtitle: Text(data["description"] ?? "Sin descripción"),
+          ),
+          if (data["publishimage"] != null && data["publishimage"] != "")
+            Image.network(data["publishimage"]),
+          // Aquí puedes agregar más widgets como botones, etc.
+        ],
       ),
     );
   }

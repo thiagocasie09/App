@@ -1,13 +1,9 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:modernlogintute/pages/newtask_screen.dart';
-import 'package:modernlogintute/widgets/listcard.dart';
-import 'package:modernlogintute/pages/NewPublishForm.dart';
 import 'package:modernlogintute/pages/calendar_screen.dart';
-import 'package:modernlogintute/pages/settings.dart';
 import 'package:modernlogintute/pages/profile_screen.dart';
+import 'activities_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,21 +14,26 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _paginaActual = 0;
-  Key _listKey = UniqueKey();
+  final GlobalKey<ActivitiesScreenState> _activitiesScreenKey =
+      GlobalKey<ActivitiesScreenState>();
+  final GlobalKey<CalendarScreenState> _calendarKey =
+      GlobalKey<CalendarScreenState>();
+  late List<Widget> _paginas;
 
-  // Modificamos las páginas para incluir el calendario en la pestaña principal
-  final List<Widget> _paginas = [
-    Column(
-      children: [
-        Expanded(child: CalendarScreen(key: CalendarScreen.calendarKey)),
-        Expanded(child: ListCard(key: UniqueKey())),
-      ],
-    ),
-    ProfileScreen(),
-    Settings_screen(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _paginas = [
+      Column(
+        children: [
+          Expanded(child: CalendarScreen(key: _calendarKey)),
+          Expanded(child: ActivitiesScreen(key: _activitiesScreenKey)),
+        ],
+      ),
+      ProfileScreen(),
+    ];
+  }
 
-  // Método para cerrar sesión con confirmación
   void signOut() async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -58,29 +59,19 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onFloatingActionButtonPressed() async {
-    print("Botón flotante presionado en página $_paginaActual");
-
     if (_paginaActual == 0) {
       final result = await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => NewTaskScreen(selectedDate: DateTime.now()),
+          builder: (context) => NewTaskScreen(
+            selectedDate:
+                _calendarKey.currentState?.selectedDay ?? DateTime.now(),
+          ),
         ),
       );
 
-      if (result == true && CalendarScreen.calendarKey.currentState != null) {
-        CalendarScreen.calendarKey.currentState!.reloadTasks();
-      }
-    } else {
-      final result = await Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => NewPublishForm()),
-      );
-
       if (result == true) {
-        setState(() {
-          _listKey = UniqueKey();
-        });
+        await _activitiesScreenKey.currentState?.reloadActivities();
       }
     }
   }
@@ -89,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('App Santiago'),
+        title: const Text('Home'),
         actions: [
           IconButton(
             onPressed: signOut,
@@ -125,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
           BottomNavigationBarItem(
-              icon: Icon(Icons.settings), label: 'Settings'),
+              icon: Icon(Icons.settings), label: 'Configuraciones'),
         ],
         backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         selectedItemColor: Colors.pink,

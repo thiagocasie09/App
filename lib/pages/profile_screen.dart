@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:modernlogintute/widgets/listcard.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+  const ProfileScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        "Perfil",
-        style: TextStyle(fontSize: 30),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Mis Publicaciones"),
       ),
+      body: const ListCard(),
     );
   }
 }
