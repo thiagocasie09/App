@@ -11,24 +11,20 @@ class ActivitiesScreen extends StatefulWidget {
 
 class ActivitiesScreenState extends State<ActivitiesScreen> {
   List<Activity> activities = [];
+  List<String> subjects = [];
 
   @override
   void initState() {
     super.initState();
-    _loadActivities();
+    loadActivities();
+    _loadSubjects();
   }
 
-  Future<void> _loadActivities() async {
-    final snapshot = await FirebaseFirestore.instance.collection('Tasks').get();
-
-    if (snapshot.docs.isEmpty) {
-      print("No hay actividades en Firestore.");
-    } else {
-      print("Actividades cargadas: ${snapshot.docs.length}");
-    }
+  void loadActivities() async {
+    final snapshot =
+        await FirebaseFirestore.instance.collection('Activities').get();
 
     final loadedActivities = snapshot.docs.map((doc) {
-      print("Actividad cargada: ${doc.data()}");
       return Activity.fromMap({
         'id': doc.id,
         ...doc.data() as Map<String, dynamic>,
@@ -40,143 +36,102 @@ class ActivitiesScreenState extends State<ActivitiesScreen> {
     });
   }
 
-  Future<void> reloadActivities() async {
-    await _loadActivities();
-  }
+  Future<void> _loadSubjects() async {
+    final snapshot =
+        await FirebaseFirestore.instance.collection('Subjects').get();
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Actividades'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Expanded(child: _buildActivityList()),
-          ],
-        ),
-      ),
-    );
-  }
+    final loadedSubjects = snapshot.docs.map((doc) {
+      return doc['name'] as String;
+    }).toList();
 
-  Widget _buildActivityList() {
-    return ListView.builder(
-      itemCount: activities.length,
-      itemBuilder: (context, index) {
-        final activity = activities[index];
-
-        return Container(
-          margin: const EdgeInsets.only(bottom: 30),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(15),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.8),
-                spreadRadius: 2,
-                blurRadius: 5,
-              ),
-            ],
-          ),
-          child: Dismissible(
-            key: Key(activity.id),
-            onDismissed: (direction) {
-              _deleteActivity(activity.id);
-              setState(() {
-                activities.removeAt(index);
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Actividad eliminada')),
-              );
-            },
-            background: Container(color: Colors.red),
-            child: ListTile(
-              title: Text('${activity.subject} - ${activity.description}'),
-              leading: Checkbox(
-                value: activity.isCompleted,
-                onChanged: (bool? value) {
-                  setState(() {
-                    activity.isCompleted = value ?? false;
-                    _updateActivityStatus(activity.id, value ?? false);
-                  });
-                },
-              ),
-              onTap: () => _editActivity(index),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> _updateActivityStatus(String id, bool isCompleted) async {
-    await FirebaseFirestore.instance.collection('Tasks').doc(id).update({
-      'status': isCompleted ? 'Completada' : 'Pendiente',
+    setState(() {
+      subjects = loadedSubjects;
     });
   }
 
-  Future<void> _deleteActivity(String id) async {
-    await FirebaseFirestore.instance.collection('Tasks').doc(id).delete();
-  }
-
-  Future<void> _updateActivityName(String id, String newSubject) async {
+  // Eliminar materia de Firestore
+  Future<void> _deleteSubject(String subject) async {
     try {
-      await FirebaseFirestore.instance.collection('Tasks').doc(id).update({
-        'subject':
-            newSubject, // Actualiza el campo "subject" con el nuevo valor
-      });
-      print('Actividad actualizada correctamente');
+      final subjectDoc = await FirebaseFirestore.instance
+          .collection('Subjects')
+          .where('name', isEqualTo: subject)
+          .get();
+      if (subjectDoc.docs.isNotEmpty) {
+        await subjectDoc.docs.first.reference.delete();
+        setState(() {
+          subjects.remove(subject);
+        });
+      }
     } catch (e) {
-      print('Error al actualizar la actividad: $e');
+      print("Error al eliminar la materia: $e");
     }
   }
 
-  void _editActivity(int index) async {
-    final activity = activities[index];
-    final newName =
-        await _showEditDialog(activity.subject, activity.description);
-    if (newName != null) {
+  // Eliminar actividad de Firestore
+  Future<void> _deleteActivity(String activityId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('Activities')
+          .doc(activityId)
+          .delete();
       setState(() {
-        activity.subject = newName;
+        activities.removeWhere((activity) => activity.id == activityId);
       });
-      _updateActivityName(activity.id, newName);
+    } catch (e) {
+      print("Error al eliminar la actividad: $e");
     }
   }
 
-  Future<String?> _showEditDialog(
-      String existingName, String existingDescription) {
-    String newName = existingName;
-    String newDescription = existingDescription;
+  void _toggleActivityCompletion(Activity activity) async {
+    try {
+      final activityRef =
+          FirebaseFirestore.instance.collection('Activities').doc(activity.id);
+      await activityRef.update({
+        'isCompleted': !activity.isCompleted,
+      });
+      setState(() {
+        activity.isCompleted = !activity.isCompleted;
+      });
+    } catch (e) {
+      print("Error al actualizar la actividad: $e");
+    }
+  }
 
-    return showDialog<String>(
+  // Crear una nueva materia
+  void _createSubject(BuildContext context) async {
+    String subjectName = '';
+
+    final subject = await _showCreateSubjectDialog(context);
+    if (subject != null) {
+      await FirebaseFirestore.instance.collection('Subjects').add({
+        'name': subject['name'],
+      });
+      _loadSubjects();
+    }
+  }
+
+  Future<Map<String, String>?> _showCreateSubjectDialog(
+      BuildContext context) async {
+    String subjectName = '';
+
+    return showDialog<Map<String, String>>(
       context: context,
-      builder: (context) {
+      builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Editar Actividad'),
-          content: Column(
-            children: [
-              TextField(
-                controller: TextEditingController(text: existingName),
-                onChanged: (value) {
-                  newName = value;
-                },
-                decoration: InputDecoration(hintText: 'Nombre de la materia'),
-              ),
-              TextField(
-                controller: TextEditingController(text: existingDescription),
-                onChanged: (value) {
-                  newDescription = value;
-                },
-                decoration: InputDecoration(hintText: 'Descripción'),
-              ),
-            ],
+          title: Text('Crear Nueva Materia'),
+          content: TextField(
+            autofocus: true,
+            decoration: InputDecoration(hintText: 'Nombre de la materia'),
+            onChanged: (value) {
+              subjectName = value;
+            },
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(newName);
+                Navigator.of(context).pop({
+                  'name': subjectName,
+                });
               },
               child: Text('Guardar'),
             ),
@@ -185,4 +140,104 @@ class ActivitiesScreenState extends State<ActivitiesScreen> {
       },
     );
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Materias'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Expanded(child: _buildSubjectList()),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        mini: true,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        heroTag: 'activities_fab', // Cambiado para que sea único
+        onPressed: () => _createSubject(context),
+        child: Icon(Icons.add),
+        backgroundColor: Colors.pink,
+      ),
+    );
+  }
+
+  Widget _buildSubjectList() {
+    return ListView.builder(
+      itemCount: subjects.length,
+      itemBuilder: (context, index) {
+        final subject = subjects[index];
+        final subjectActivities = activities
+            .where((activity) => activity.subject == subject)
+            .toList();
+        final completionPercentage =
+            _getCompletionPercentage(subjectActivities);
+
+        return Dismissible(
+          key: Key(subject),
+          direction: DismissDirection.endToStart,
+          onDismissed: (direction) {
+            _deleteSubject(subject);
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text("Materia eliminada")));
+          },
+          background: Container(color: Colors.red),
+          child: Card(
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            elevation: 5,
+            child: ListTile(
+              title: Text(subject),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  LinearProgressIndicator(
+                    value: completionPercentage,
+                    backgroundColor: Colors.grey[200],
+                    color: Colors.pink,
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    '${(completionPercentage * 100).toStringAsFixed(0)}% completado',
+                    style: TextStyle(fontSize: 12, color: Colors.pinkAccent),
+                  ),
+                  SizedBox(height: 10),
+                ],
+              ),
+              onTap: () => _navigateToActivities(subjectActivities),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  double _getCompletionPercentage(List<Activity> activities) {
+    int completedCount =
+        activities.where((activity) => activity.isCompleted).length;
+    return activities.isEmpty ? 0 : completedCount / activities.length;
+  }
+
+  void _navigateToActivities(List<Activity> activities) {
+    if (activities.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("No hay actividades disponibles para esta materia")),
+      );
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ActivityListScreen(activities: activities),
+      ),
+    );
+  }
+
+  ActivityListScreen({required List<Activity> activities}) {}
 }

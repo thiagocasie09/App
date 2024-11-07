@@ -2,6 +2,7 @@ import 'package:modernlogintute/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:modernlogintute/authentication/auth.dart';
+import 'package:modernlogintute/pages/home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

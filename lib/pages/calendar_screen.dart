@@ -59,7 +59,7 @@ class CalendarScreenState extends State<CalendarScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Calendario de Tareas')),
+      appBar: AppBar(title: const Text('Calendario de Actividades')),
       body: Column(
         children: [
           TableCalendar(
@@ -80,18 +80,17 @@ class CalendarScreenState extends State<CalendarScreen> {
               });
             },
             eventLoader: (day) {
-              // Esto carga los eventos para un día específico
-              return _getTasksForDay(day);
+              return _getTasksForDay(day); // Cargar los eventos para un día
             },
             calendarBuilders: CalendarBuilders(
               todayBuilder: (context, day, focusedDay) {
-                return _buildDayCell(context, day, focusedDay);
+                return _buildDayCell(context, day, focusedDay, isToday: true);
               },
               selectedBuilder: (context, day, focusedDay) {
-                return _buildDayCell(context, day, focusedDay);
+                return _buildDayCell(context, day, focusedDay, isToday: false);
               },
               defaultBuilder: (context, day, focusedDay) {
-                return _buildDayCell(context, day, focusedDay);
+                return _buildDayCell(context, day, focusedDay, isToday: false);
               },
             ),
           ),
@@ -119,12 +118,18 @@ class CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  Widget _buildDayCell(
-      BuildContext context, DateTime day, DateTime focusedDay) {
-    final events = _getTasksForDay(day); // Obtener eventos para este día
+  Widget _buildDayCell(BuildContext context, DateTime day, DateTime focusedDay,
+      {required bool isToday}) {
+    final events = _getTasksForDay(day);
+    bool isSelected = isSameDay(day, selectedDay);
+
     return Container(
       decoration: BoxDecoration(
-        color: events.isNotEmpty ? Colors.pinkAccent : Colors.transparent,
+        color: isSelected
+            ? Colors.grey
+            : isToday
+                ? Colors.transparent
+                : Colors.transparent,
         borderRadius: BorderRadius.circular(5),
       ),
       child: Center(
@@ -135,21 +140,34 @@ class CalendarScreenState extends State<CalendarScreen> {
                 child: Text(
                   '${day.day}',
                   style: TextStyle(
-                    color: events.isNotEmpty ? Colors.white : Colors.black,
+                    color: isToday ? Colors.black : Colors.black,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ),
-            if (events.isNotEmpty)
+            if (isToday)
               Positioned(
-                right: 0.5,
-                top: 2,
-                child: CircleAvatar(
-                  radius: 10,
-                  backgroundColor: Colors.pink,
+                top: 4,
+                left: 4,
+                right: 4,
+                bottom: 4,
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.purpleAccent.withOpacity(0.2),
+                      border: Border.all(
+                        color: Colors.purpleAccent,
+                        width: 2,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+              )
           ],
         ),
       ),

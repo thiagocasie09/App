@@ -16,62 +16,33 @@ class _HomeScreenState extends State<HomeScreen> {
   int _paginaActual = 0;
   final GlobalKey<ActivitiesScreenState> _activitiesScreenKey =
       GlobalKey<ActivitiesScreenState>();
-  final GlobalKey<CalendarScreenState> _calendarKey =
-      GlobalKey<CalendarScreenState>();
+
   late List<Widget> _paginas;
 
   @override
   void initState() {
     super.initState();
     _paginas = [
-      Column(
-        children: [
-          Expanded(child: CalendarScreen(key: _calendarKey)),
-          Expanded(child: ActivitiesScreen(key: _activitiesScreenKey)),
-        ],
-      ),
+      CalendarScreen(),
+      ActivitiesScreen(key: _activitiesScreenKey),
       ProfileScreen(),
     ];
   }
 
-  void signOut() async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Cerrar sesión'),
-        content: Text('¿Estás seguro de que deseas cerrar sesión?'),
-        actions: <Widget>[
-          TextButton(
-            child: Text('Cancelar'),
-            onPressed: () => Navigator.of(context).pop(false),
-          ),
-          TextButton(
-            child: Text('Aceptar'),
-            onPressed: () => Navigator.of(context).pop(true),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true) {
-      await FirebaseAuth.instance.signOut();
-    }
-  }
-
   void _onFloatingActionButtonPressed() async {
     if (_paginaActual == 0) {
+      // Solo en la pantalla principal
       final result = await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => NewTaskScreen(
-            selectedDate:
-                _calendarKey.currentState?.selectedDay ?? DateTime.now(),
+            selectedDate: DateTime.now(),
+            subjects: _activitiesScreenKey.currentState?.subjects ?? [],
           ),
         ),
       );
-
       if (result == true) {
-        await _activitiesScreenKey.currentState?.reloadActivities();
+        _activitiesScreenKey.currentState?.loadActivities();
       }
     }
   }
@@ -80,10 +51,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Home'),
+        title: const Text('ManaWork'),
         actions: [
           IconButton(
-            onPressed: signOut,
+            onPressed: () {
+              FirebaseAuth.instance.signOut();
+            },
             icon: Icon(Icons.logout),
           ),
         ],
@@ -100,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
-              heroTag: _paginaActual == 0 ? "calendar_fab" : "home_fab",
+              heroTag: 'home_fab', // Cambiado a un heroTag único
               onPressed: _onFloatingActionButtonPressed,
               child: const Icon(Icons.add),
               backgroundColor: Colors.pink,
@@ -116,6 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Actividades'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
           BottomNavigationBarItem(
               icon: Icon(Icons.settings), label: 'Configuraciones'),
