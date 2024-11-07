@@ -9,8 +9,8 @@ class ListCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
-          .collection('Publication') // Colección de publicaciones
-          .orderBy('Date', descending: true) // Ordena por fecha
+          .collection('Publication')
+          .orderBy('Date', descending: true)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {

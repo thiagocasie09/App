@@ -95,7 +95,7 @@ class CalendarScreenState extends State<CalendarScreen> {
               },
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Expanded(
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -119,14 +119,13 @@ class CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  // Widget para construir el día con los puntos de eventos
   Widget _buildDayCell(
       BuildContext context, DateTime day, DateTime focusedDay) {
     final events = _getTasksForDay(day); // Obtener eventos para este día
     return Container(
       decoration: BoxDecoration(
         color: events.isNotEmpty ? Colors.pinkAccent : Colors.transparent,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(5),
       ),
       child: Center(
         child: Stack(
@@ -144,10 +143,10 @@ class CalendarScreenState extends State<CalendarScreen> {
             ),
             if (events.isNotEmpty)
               Positioned(
-                right: 2,
+                right: 0.5,
                 top: 2,
                 child: CircleAvatar(
-                  radius: 6,
+                  radius: 10,
                   backgroundColor: Colors.pink,
                 ),
               ),

@@ -94,17 +94,19 @@ class _HomeScreenState extends State<HomeScreen> {
         index: _paginaActual,
         children: _paginas,
       ),
-      floatingActionButton: FloatingActionButton(
-        mini: true,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        heroTag: _paginaActual == 0 ? "calendar_fab" : "home_fab",
-        onPressed: _onFloatingActionButtonPressed,
-        child: const Icon(Icons.add),
-        backgroundColor: Colors.pink,
-        foregroundColor: Colors.white,
-      ),
+      floatingActionButton: _paginaActual == 0
+          ? FloatingActionButton(
+              mini: true,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              heroTag: _paginaActual == 0 ? "calendar_fab" : "home_fab",
+              onPressed: _onFloatingActionButtonPressed,
+              child: const Icon(Icons.add),
+              backgroundColor: Colors.pink,
+              foregroundColor: Colors.white,
+            )
+          : null,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _paginaActual,
         onTap: (index) {

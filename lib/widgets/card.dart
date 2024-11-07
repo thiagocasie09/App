@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class CardWidget extends StatelessWidget {
   final Map<String, dynamic> data;
@@ -12,12 +13,19 @@ class CardWidget extends StatelessWidget {
       margin: const EdgeInsets.all(10),
       child: Column(
         children: [
+          // Mostrar el nombre del publicador y la descripción
           ListTile(
             title: Text(data["publisher"] ?? "Sin nombre"),
             subtitle: Text(data["description"] ?? "Sin descripción"),
           ),
+
+          // Verifica si el campo de la imagen existe y no es vacío
           if (data["publishimage"] != null && data["publishimage"] != "")
-            Image.network(data["publishimage"]),
+            CachedNetworkImage(
+              imageUrl: data["publishimage"],
+              placeholder: (context, url) => const CircularProgressIndicator(),
+              errorWidget: (context, url, error) => const Icon(Icons.error),
+            ),
           // Aquí puedes agregar más widgets como botones, etc.
         ],
       ),

@@ -60,10 +60,10 @@ class _LoginPageState extends State<LoginPage> {
                 size: 100,
               ),
 
-              const SizedBox(height: 50),
+              const SizedBox(height: 100),
 
               Text(
-                "Bienvenido a APP Santiago",
+                "Bienvenido a ManaWork",
                 style: TextStyle(
                   color: Colors.pink[700],
                 ),
