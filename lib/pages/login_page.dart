@@ -1,7 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/material.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:modernlogintute/components/my_button.dart';
 import 'package:modernlogintute/components/my_textfield.dart';
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginPage extends StatefulWidget {
   final Function()? onTap;
@@ -54,47 +56,86 @@ class _LoginPageState extends State<LoginPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 50),
-
-              const Icon(
-                Icons.lock,
-                size: 100,
-              ),
-
+              const Icon(Icons.lock, size: 100),
               const SizedBox(height: 100),
-
               Text(
                 "Bienvenido a ManaWork",
-                style: TextStyle(
-                  color: Colors.pink[700],
-                ),
+                style: TextStyle(color: Colors.pink[700]),
               ),
-
               const SizedBox(height: 30),
 
-              //email
-
+              // Email field
               MyTextField(
                 controller: emailTextController,
                 hintText: 'Email',
                 obscureText: false,
               ),
-
               const SizedBox(height: 10),
 
+              // Password field
               MyTextField(
                 controller: passwordTextController,
                 hintText: 'Password',
                 obscureText: true,
               ),
-
               const SizedBox(height: 10),
 
+              // Sign in button
               MyButton(
                 onTap: sigIn,
-                text: 'Singn In',
+                text: 'Sign In',
               ),
+              const SizedBox(height: 25),
 
               const SizedBox(height: 25),
+
+              // Forgot password button
+              ElevatedButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      String email = '';
+                      return AlertDialog(
+                        title: Text("Restablecer Contraseña"),
+                        content: TextField(
+                          decoration:
+                              InputDecoration(labelText: "Correo Electrónico"),
+                          onChanged: (value) {
+                            email = value;
+                          },
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text("Cancelar"),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              if (email.isNotEmpty) {
+                                try {
+                                  await FirebaseAuth.instance
+                                      .sendPasswordResetEmail(email: email);
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                    content: Text(
+                                        "Correo enviado para restablecer contraseña."),
+                                  ));
+                                } catch (e) {
+                                  print("Error: $e");
+                                }
+                              }
+                            },
+                            child: Text("Enviar"),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                child: Text("¿Olvidaste tu contraseña?"),
+              ),
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,

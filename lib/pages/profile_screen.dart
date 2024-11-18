@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:modernlogintute/widgets/listcard.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:modernlogintute/widgets/card.dart';
 import 'package:modernlogintute/pages/NewPublishForm.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -11,7 +12,31 @@ class ProfileScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Mis Publicaciones"),
       ),
-      body: const ListCard(),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('Publication')
+            .orderBy('Date', descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+          final posts = snapshot.data?.docs ?? [];
+          return ListView.builder(
+            itemCount: posts.length,
+            itemBuilder: (context, index) {
+              final postData = posts[index].data() as Map<String, dynamic>;
+              return CardWidget(
+                data: postData,
+                documentId: posts[index].id,
+              );
+            },
+          );
+        },
+      ),
       floatingActionButton: FloatingActionButton(
         mini: true,
         shape: RoundedRectangleBorder(

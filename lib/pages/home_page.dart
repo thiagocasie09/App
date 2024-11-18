@@ -91,8 +91,6 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Actividades'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.settings), label: 'Configuraciones'),
         ],
         backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         selectedItemColor: Colors.pink,

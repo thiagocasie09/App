@@ -19,7 +19,14 @@ class CalendarScreenState extends State<CalendarScreen> {
   @override
   void initState() {
     super.initState();
-    _loadTasks(); // Cargar las tareas al inicio
+    _loadTasks();
+  }
+
+  DateTime? _safeToDate(dynamic value) {
+    if (value is Timestamp) {
+      return value.toDate();
+    }
+    return null;
   }
 
   Future<void> _loadTasks() async {
@@ -33,16 +40,21 @@ class CalendarScreenState extends State<CalendarScreen> {
 
     for (var doc in snapshot.docs) {
       final data = doc.data();
-      final date = (data['date'] as Timestamp).toDate();
-      final task = {
-        'subject': data['subject'],
-        'description': data['description'],
-        'status': data['status'] ?? 'Pendiente',
-      };
+      final date = _safeToDate(data['date']);
 
-      final normalizedDate = DateTime(date.year, date.month, date.day);
-      tasksByDate[normalizedDate] = (tasksByDate[normalizedDate] ?? [])
-        ..add(task);
+      if (date != null) {
+        final task = {
+          'subject': data['subject'] ?? 'Sin materia',
+          'description': data['description'] ?? 'Sin descripción',
+          'status': data['status'] ?? 'Pendiente',
+        };
+
+        final normalizedDate = DateTime(date.year, date.month, date.day);
+        tasksByDate[normalizedDate] = (tasksByDate[normalizedDate] ?? [])
+          ..add(task);
+      } else {
+        print('El documento ${doc.id} no tiene un campo "date" válido.');
+      }
     }
 
     setState(() {
@@ -80,7 +92,7 @@ class CalendarScreenState extends State<CalendarScreen> {
               });
             },
             eventLoader: (day) {
-              return _getTasksForDay(day); // Cargar los eventos para un día
+              return _getTasksForDay(day);
             },
             calendarBuilders: CalendarBuilders(
               todayBuilder: (context, day, focusedDay) {
@@ -104,11 +116,17 @@ class CalendarScreenState extends State<CalendarScreen> {
                     itemBuilder: (context, index) {
                       final task =
                           _getTasksForDay(selectedDay ?? _focusedDay)[index];
-                      return ListTile(
+                      return ExpansionTile(
                         title: Text(task['subject'] ?? 'Sin materia'),
-                        subtitle:
-                            Text(task['description'] ?? 'Sin descripción'),
-                        trailing: Text(task['status'] ?? 'Pendiente'),
+                        children: [
+                          ListTile(
+                            title:
+                                Text(task['description'] ?? 'Sin descripción'),
+                            subtitle: Text(
+                              'Estado: ${task['status'] ?? 'Pendiente'}',
+                            ),
+                          ),
+                        ],
                       );
                     },
                   ),

@@ -4,10 +4,10 @@ class Activity {
   final String id;
   String subject;
   String description;
-  bool isCompleted; // Indica si la actividad está completada
-  String? comment; // Comentario de la actividad cuando se marca como completada
-  DateTime? date; // Fecha de la actividad
-  String? status; // El estado de la actividad (e.g. 'Completada', 'Pendiente')
+  bool isCompleted;
+  String? comment;
+  DateTime? date;
+  String status;
 
   Activity({
     required this.id,
@@ -22,8 +22,7 @@ class Activity {
   factory Activity.fromMap(Map<String, dynamic> data) {
     DateTime? activityDate;
     if (data['date'] is Timestamp) {
-      activityDate = (data['date'] as Timestamp)
-          .toDate(); // Convierte Timestamp a DateTime
+      activityDate = (data['date'] as Timestamp).toDate();
     }
 
     return Activity(
@@ -31,7 +30,6 @@ class Activity {
       subject: data['subject'] ?? '',
       description: data['description'] ?? '',
       isCompleted: data['status'] == 'Completada',
-      comment: data['comment'],
       date: activityDate,
       status: data['status'] ?? 'Pendiente',
     );

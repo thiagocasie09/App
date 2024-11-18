@@ -5,7 +5,7 @@ class NewTaskScreen extends StatefulWidget {
   final DateTime selectedDate;
 
   const NewTaskScreen(
-      {Key? key, required this.selectedDate, required List<String> subjects})
+      {Key? key, required this.selectedDate, required List subjects})
       : super(key: key);
 
   @override
@@ -13,11 +13,11 @@ class NewTaskScreen extends StatefulWidget {
 }
 
 class _NewTaskScreenState extends State<NewTaskScreen> {
-  String selectedSubject = ''; // Materia seleccionada
-  String taskDescription = ''; // Descripción de la tarea
-  DateTime? selectedDate; // Fecha de entrega de la tarea
+  String selectedSubject = '';
+  String taskDescription = '';
+  DateTime? selectedDate;
   bool isLoading = false;
-  List<String> subjects = []; // Lista de materias disponibles
+  List<String> subjects = [];
 
   @override
   void initState() {
@@ -26,27 +26,66 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
     _loadSubjects();
   }
 
-  // Cargar las materias desde Firestore
   Future<void> _loadSubjects() async {
-    final snapshot =
-        await FirebaseFirestore.instance.collection('Subjects').get();
+    setState(() {
+      isLoading = true;
+    });
 
-    if (snapshot.docs.isEmpty) {
-      print("No hay materias en Firestore.");
-      setState(() {
-        subjects = [];
-        selectedSubject = ''; // Evitamos que selectedSubject sea null
-      });
-    } else {
+    try {
+      final snapshot =
+          await FirebaseFirestore.instance.collection('Subjects').get();
+
       final loadedSubjects = snapshot.docs.map((doc) {
         return doc['name'] as String;
       }).toList();
 
       setState(() {
         subjects = loadedSubjects;
-        // Si hay materias, se asigna la primera materia seleccionada por defecto.
         selectedSubject = subjects.isNotEmpty ? subjects[0] : '';
       });
+    } catch (e) {
+      print("Error al cargar materias: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Error al cargar las materias")),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _saveTask() async {
+    if (selectedSubject.isNotEmpty &&
+        taskDescription.isNotEmpty &&
+        selectedDate != null) {
+      setState(() {
+        isLoading = true;
+      });
+
+      try {
+        await FirebaseFirestore.instance.collection('Tasks').add({
+          'date': Timestamp.fromDate(selectedDate!),
+          'subject': selectedSubject,
+          'description': taskDescription,
+          'status': 'Pendiente',
+        });
+
+        Navigator.pop(context, true);
+      } catch (e) {
+        print("Error al guardar la tarea: $e");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Error al guardar la tarea")),
+        );
+      } finally {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Completa todos los campos")),
+      );
     }
   }
 
@@ -56,106 +95,67 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
       appBar: AppBar(title: const Text('Nueva Tarea')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Verifica si la lista de materias está vacía y muestra un indicador de carga si es necesario
-            if (subjects.isEmpty)
-              const CircularProgressIndicator() // Mientras se cargan las materias, se muestra un cargando.
-            else
-              DropdownButton<String>(
-                value: selectedSubject.isEmpty
-                    ? null
-                    : selectedSubject, // Aseguramos que nunca sea null.
-                hint: Text(subjects.isEmpty
-                    ? 'No hay materias disponibles'
-                    : 'Selecciona una Materia'),
-                isExpanded: true,
-                onChanged: (value) {
-                  setState(() {
-                    selectedSubject = value!; // Garantizamos que no sea null
-                  });
-                },
-                items: subjects.map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-              ),
-            const SizedBox(height: 16),
-            TextField(
-              decoration: const InputDecoration(labelText: "Descripción"),
-              onChanged: (value) => setState(() {
-                taskDescription = value;
-              }),
-            ),
-            const SizedBox(height: 16),
-            // Selector de fecha
-            TextField(
-              readOnly: true,
-              decoration: InputDecoration(
-                labelText: "Fecha de Entrega",
-                hintText: selectedDate == null
-                    ? "Selecciona una fecha"
-                    : "${selectedDate!.toLocal()}".split(' ')[0],
-              ),
-              onTap: () async {
-                final DateTime? pickedDate = await showDatePicker(
-                  context: context,
-                  initialDate: selectedDate ?? DateTime.now(),
-                  firstDate: DateTime(2000),
-                  lastDate: DateTime(2101),
-                );
-                if (pickedDate != null && pickedDate != selectedDate) {
-                  setState(() {
-                    selectedDate = pickedDate;
-                  });
-                }
-              },
-            ),
-            const SizedBox(height: 20),
-            isLoading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: () async {
-                      if (selectedSubject.isNotEmpty &&
-                          taskDescription.isNotEmpty &&
-                          selectedDate != null) {
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  DropdownButton<String>(
+                    value: selectedSubject.isEmpty ? null : selectedSubject,
+                    hint: const Text('Selecciona una Materia'),
+                    isExpanded: true,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedSubject = value!;
+                      });
+                    },
+                    items:
+                        subjects.map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    decoration: const InputDecoration(labelText: "Descripción"),
+                    onChanged: (value) {
+                      setState(() {
+                        taskDescription = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      labelText: "Fecha de Entrega",
+                      hintText: selectedDate == null
+                          ? "Selecciona una fecha"
+                          : "${selectedDate!.toLocal()}".split(' ')[0],
+                    ),
+                    onTap: () async {
+                      final pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: selectedDate ?? DateTime.now(),
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2101),
+                      );
+                      if (pickedDate != null) {
                         setState(() {
-                          isLoading = true;
+                          selectedDate = pickedDate;
                         });
-                        try {
-                          await FirebaseFirestore.instance
-                              .collection('Tasks')
-                              .add({
-                            'date': Timestamp.fromDate(selectedDate!),
-                            'subject': selectedSubject,
-                            'description': taskDescription,
-                            'status': 'Pendiente',
-                          });
-                          Navigator.pop(context, true);
-                        } catch (e) {
-                          print("Error al guardar la tarea: $e");
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content: Text("Error al guardar la tarea")),
-                          );
-                        } finally {
-                          setState(() {
-                            isLoading = false;
-                          });
-                        }
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text("Completa todos los campos")),
-                        );
                       }
                     },
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _saveTask,
                     child: const Text("Guardar Tarea"),
                   ),
-          ],
-        ),
+                ],
+              ),
       ),
     );
   }

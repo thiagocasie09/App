@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'activity.dart';
 
 class ActivityListScreen extends StatelessWidget {
-  final List<Activity> activities; // Aquí pasamos la lista de actividades
+  final List<Activity> activities;
 
   ActivityListScreen({Key? key, required this.activities}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Comprobamos si activities es null
     if (activities == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Actividades')),

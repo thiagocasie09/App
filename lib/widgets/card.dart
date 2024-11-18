@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:modernlogintute/widgets/bottomscard.dart';
 
 class CardWidget extends StatelessWidget {
   final Map<String, dynamic> data;
@@ -26,7 +27,10 @@ class CardWidget extends StatelessWidget {
               placeholder: (context, url) => const CircularProgressIndicator(),
               errorWidget: (context, url, error) => const Icon(Icons.error),
             ),
-          // Aquí puedes agregar más widgets como botones, etc.
+          const SizedBox(height: 8),
+
+          // Botones de "Me gusta" y "Comentar"
+          BottomCard(documentId: documentId),
         ],
       ),
     );
